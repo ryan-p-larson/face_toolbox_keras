@@ -1,6 +1,6 @@
 # face-toolbox-keras
 
-A collection of deep learning frameworks ported to Keras for face detection, face segmentation, face parsing, iris detection, and face verification.
+A collection of deep learning frameworks ported to Keras for face detection, face segmentation, face parsing, iris detection.
 
 ![](./images/examples.jpg)
 
@@ -15,14 +15,6 @@ This repository contains deep learning frameworks that we collected and ported t
   - 2DFAN-4, 2DFAN-2, and 2DFAN-1 models ported from [1adrianb/face-alignment](https://github.com/1adrianb/face-alignment).
 - **Face parsing:**
   - BiSeNet model ported from [zllrunning/face-parsing.PyTorch](https://github.com/zllrunning/face-parsing.PyTorch).
-- **Eye region landmarks detection:**
-  - ELG model is ported from [swook/GazeML](https://github.com/swook/GazeML).
-- **Face verification:**
-  - InceptionResNetV1 model (model name: 20180402-114759) ported from [davidsandberg/facenet](https://github.com/davidsandberg/facenet).
-  - LResNet100E-IR model ported from [deepinsight/insightface](https://github.com/deepinsight/insightface).
-  - IR50 model ported from [ZhaoJ9014/face.evoLVe.PyTorch](https://github.com/ZhaoJ9014/face.evoLVe.PyTorch).
-- **Gender and age estimation:**
-  - MobileNet model ported from [deepinsight/insightface](https://github.com/deepinsight/insightface).
 
 ##### *Each module follows the license of their source repo. Notice that some models were trained on dataset with non-commercial license.
 
@@ -103,50 +95,6 @@ idet.set_detector(fd) # fd = face_detector.FaceAlignmentDetector()
 eye_landmarks = idet.detect_iris(im)
 ```
 
-### 5. Face verification
-```python
-models.verifier.face_verifier.FaceVerifier(extractor="facenet", classes=512)
-```
-
-**Argument**
-
-- `extractor`: A string, one of `facenet`, `insightface`, `ir50_ms1m`, or `ir50_asia`.
-- `classes`: An integer. Dimension of output embeddings.
-
-**Example**
-```python
-from models.verifier import face_verifier
-
-im1 = cv2.imread(PATH_TO_IMAGE1)[..., ::-1]
-im2 = cv2.imread(PATH_TO_IMAGE2)[..., ::-1]
-fv = face_verifier.FaceVerifier(extractor="facenet")
-# fv.set_detector(fd) # fd = face_detector.FaceAlignmentDetector()
-result, distance = fv.verify(im1, im2, threshold=0.5, with_detection=False, with_alignment=False, return_distance=True)
-```
-
-### 6. Gender and age estimation
-
-```python
-models.estimator.gender_age_estimator.GenderAgeEstimator(model_type="insightface")
-```
-
-**Arguments**
-- `model_type`: A string, only `insightface` is supported now.
-
-**Example**
-```python
-from models.estimator import gender_age_estimator
-
-im = cv2.imread(PATH_TO_IMAGE)[..., ::-1]
-gae = gender_age_estimator.GenderAgeEstimator()
-gae.set_detector(fd) # fd = face_detector.FaceAlignmentDetector()
-gender, age = gae.predict_gender_age(im, with_detection=True)
-```
-
-## Ported model weights
-- [insightface model](https://drive.google.com/uc?id=1H37LER8mRRI4q_nxpS3uQz3DcGHkTrNU), this file should be put in `./models/verifier/insightface/`.
-- [IR50-MS-Celeb-1M model](https://drive.google.com/uc?id=18MyyXQIwhR5I6gzipYMiJ9ywgvFWQMvI), this file should be put in `./models/verifier/face_evoLVe_ir50/`.
-- [IR50-Asia-face model](https://drive.google.com/uc?id=1P_eQHU8bNJEsB6hHt_fnltOwQVKIfhiX), this file should be put in `./models/verifier/face_evoLVe_ir50/`.
 
 ## Known issues
 It works fine on Colab at this point (2019/06/11) but for certain Keras/TensorFlow version, it throws errors loading `2DFAN-1_keras.h5` or `2DFAN-2_keras.h5`.
