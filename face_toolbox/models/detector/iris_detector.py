@@ -1,8 +1,8 @@
 import pkg_resources
 import numpy as np
 import cv2
-
 from .ELG.elg_keras import KerasELG
+
 NET_INPUT_SHAPE = (108, 180)
 
 class IrisDetector():

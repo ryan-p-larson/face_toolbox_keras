@@ -11,7 +11,6 @@ from .landmarks_detector import FANLandmarksDetector
 class BaseFaceDetector():
     def __init__(self):
         pass
-
     def detect_face(self):
         raise NotImplementedError
 
