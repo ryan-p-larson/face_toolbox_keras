@@ -20,7 +20,7 @@ class FaceVerifier():
     This class serves as wrapper for four face verification models
 
     # Arguments
-        extractor: String, one of featrure extractor network 
+        extractor: String, one of featrure extractor network
                    "facenet", "insightface", "ir50_asia", and "ir50_ms1m"
         classes: Ineger whiich should be a fixed value of 512.
     """
@@ -41,12 +41,12 @@ class FaceVerifier():
             self.weights_path = FILE_PATH / "face_evoLVe_ir50" / "backbone_ir50_ms1m_keras.h5"
         else:
             raise ValueError(f"Received an unknown extractor: {str(extractor)}.")
-        
-        self.net = self.build_networks(classes=classes)        
+
+        self.net = self.build_networks(classes=classes)
         self.net.trainable = False
-        
+
         self.detector = False
-        
+
     def build_networks(self, classes=512):
         input_tensor = Input((None, None, 3))
         resize_layer = self.resize_tensor(size=self.input_resolution)
@@ -56,53 +56,53 @@ class FaceVerifier():
             facenet = InceptionResNetV1(weights_path=self.weights_path, classes=classes)
             facenet = Model(facenet.inputs, facenet.layers[-1].output) # layers[-1] is a BN layers
             preprocess_layer = self.preprocess()
-            output_tensor = l2_normalize(facenet(preprocess_layer(resize_layer(input_tensor))))    
+            output_tensor = l2_normalize(facenet(preprocess_layer(resize_layer(input_tensor))))
         elif self.extractor_type == "insightface":
             from .insightface.lresnet100e_ir import LResNet100E_IR
             lresnet100e_ir = LResNet100E_IR(weights_path=self.weights_path)
-            output_tensor = l2_normalize(lresnet100e_ir(resize_layer(input_tensor)))  
+            output_tensor = l2_normalize(lresnet100e_ir(resize_layer(input_tensor)))
         elif self.extractor_type == "ir50_asia" or self.extractor_type == "ir50_ms1m":
             from .face_evoLVe_ir50.ir50 import IR50
             ir50 = IR50(weights_path=self.weights_path)
             preprocess_layer = self.preprocess()
-            output_tensor = l2_normalize(ir50(preprocess_layer(resize_layer(input_tensor))))     
+            output_tensor = l2_normalize(ir50(preprocess_layer(resize_layer(input_tensor))))
         return Model(input_tensor, output_tensor)
-    
+
     def set_detector(self, detector):
         self.detector = detector
-        
+
     def resize_tensor(self, size):
-        input_tensor = Input((None, None, 3)) 
-        output_tensor = Lambda(lambda x: tf.image.resize_bilinear(x, [size, size]))(input_tensor)
+        input_tensor = Input((None, None, 3))
+        output_tensor = Lambda(lambda x: tf.compat.v1.image.resize(x, [size, size], method=tf.compat.v1.image.ResizeMethod.BILINEAR))(input_tensor)
         return Model(input_tensor, output_tensor)
-        
-    def preprocess(self):        
+
+    def preprocess(self):
         def preprocess_facenet(x):
-            """ 
+            """
                 tf.image.per_image_standardization
                 K.mean & K.std axis being [-3,-2,-1] or [-1,-2,-3] does nor affect output
                 since the output shape is [batch_size, 1, 1, 1].
             """
             x = (x - 127.5) / 128
             x = K.map_fn(lambda im: tf.image.per_image_standardization(im), x)
-            return x     
+            return x
         def preprocess_ir50(x):
             x = (x - 127.5) / 128
             x = x[:, 8:120, 8:120, :]
-            return x  
-        
-        input_tensor = Input((None, None, 3)) 
+            return x
+
+        input_tensor = Input((None, None, 3))
         if self.extractor_type == "facenet":
             output_tensor = Lambda(preprocess_facenet)(input_tensor)
         elif self.extractor_type == "ir50_asia" or self.extractor_type == "ir50_ms1m":
             output_tensor = Lambda(preprocess_ir50)(input_tensor)
         return Model(input_tensor, output_tensor)
-    
-    def l2_norm(self):            
+
+    def l2_norm(self):
         input_tensor = Input((self.latent_dim,))
         output_tensor = Lambda(lambda x: K.l2_normalize(x))(input_tensor)
         return Model(input_tensor, output_tensor)
-    
+
     def verify(self, im1, im2, threshold=0.5, with_detection=False, with_alignment=False, return_distance=True):
         """Verify two given images by computing the distance between their latent embeddings.
 
@@ -123,7 +123,7 @@ class FaceVerifier():
         """
         emb1 = self.extract_embeddings(im1, with_detection=with_detection, with_alignment=with_alignment)
         emb2 = self.extract_embeddings(im2, with_detection=with_detection, with_alignment=with_alignment)
-        
+
         if self.extractor_type == "facenet":
             dist = self.compute_cosine_distance(emb1, emb2)
         elif self.extractor_type == "insightface" or self.extractor_type == "ir50_asia" or self.extractor_type == "ir50_ms1m":
@@ -136,7 +136,7 @@ class FaceVerifier():
             return is_same_person, dist
         else:
             return is_same_person
-    
+
     def extract_embeddings(self, im, with_detection=False, with_alignment=False, return_face=False):
         """Extract latent embeddings of the input image
 
@@ -166,22 +166,22 @@ class FaceVerifier():
                 faces = faces[most_conf_idx:most_conf_idx+1]
                 if with_alignment:
                     landmarks = landmarks[most_conf_idx:most_conf_idx+1]
-                    
-            if with_alignment:        
+
+            if with_alignment:
                 face = self.align_face(im, landmarks[0][..., ::-1], self.input_resolution)
             else:
                 x0, y0, x1, y1, _ = faces[0].astype(np.int32)
-                face = im[x0:x1, y0:y1]    
+                face = im[x0:x1, y0:y1]
         else:
             face = im
-        
-        input_array = face[np.newaxis, ...] 
+
+        input_array = face[np.newaxis, ...]
         embeddings = self.net.predict([input_array])
         if return_face:
             return embeddings, face
         else:
-            return embeddings  
-    
+            return embeddings
+
     @staticmethod
     def align_face(im, src, size):
         # Refer to:
@@ -192,14 +192,12 @@ class FaceVerifier():
             [48.0252, 71.7366],
             [33.5493, 92.3655],
             [62.7299, 92.2041] ], dtype=np.float32 )
-        dst[:,0] += 8.0       
-        dst = dst / 112 * size 
+        dst[:,0] += 8.0
+        dst = dst / 112 * size
         M = umeyama(src, dst, True)[0:2]
         warped = cv2.warpAffine(im, M, (size, size), borderValue=0.0)
-        return warped 
-    
+        return warped
+
     @staticmethod
     def compute_cosine_distance(emb1, emb2):
         return distance.cosine(emb1, emb2)
-        
-        
