@@ -1,23 +1,28 @@
 import os
+import pkg_resources
 import numpy as np
 import tensorflow as tf
 from keras import backend as K
+tf.compat.v1.disable_eager_execution()
 
 from . import mtcnn_detect_face
 
 class MTCNN():
     """
     This class load the MTCNN network and perform face detection.
-    
+
     Attributes:
         model_path: path to the MTCNN weights files
     """
-    def __init__(self, model_path="./mtcnn/"):
+    def __init__(self,
+        # model_path="./mtcnn/"):
+        model_path=pkg_resources.resource_filename('face_toolbox', 'models/detector/mtcnn')):
         self.pnet = None
         self.rnet = None
         self.onet = None
-        self._create_mtcnn(K.get_session(), model_path)
-        
+        # self._create_mtcnn(K.get_session(), model_path)
+        self._create_mtcnn(tf.compat.v1.keras.backend.get_session(), model_path)
+
     def _create_mtcnn(self, sess, model_path):
         if not model_path:
             model_path, _ = os.path.split(os.path.realpath(__file__))
@@ -37,12 +42,12 @@ class MTCNN():
         self.pnet = K.function([pnet.layers['data']], [pnet.layers['conv4-2'], pnet.layers['prob1']])
         self.rnet = K.function([rnet.layers['data']], [rnet.layers['conv5-2'], rnet.layers['prob1']])
         self.onet = K.function([onet.layers['data']], [onet.layers['conv6-2'], onet.layers['conv6-3'], onet.layers['prob1']])
-    
-    def detect_face(self, image, minsize=20, threshold=0.7, factor=0.709):            
+
+    def detect_face(self, image, minsize=20, threshold=0.7, factor=0.709):
         faces, pnts = mtcnn_detect_face.detect_face(
-            image, minsize, 
-            self.pnet, self.rnet, self.onet, 
-            [0.6, 0.7, threshold], 
+            image, minsize,
+            self.pnet, self.rnet, self.onet,
+            [0.6, 0.7, threshold],
             factor)
         #faces = self._process_mtcnn_bbox(faces, image.shape)
         bboxes = [faces[i, ...] for i in range(faces.shape[0])]

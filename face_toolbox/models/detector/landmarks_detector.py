@@ -1,23 +1,23 @@
 """
 Code modified from https://github.com/1adrianb/face-alignment
 """
+import pkg_resources
 import cv2
 import numpy as np
 import tensorflow as tf
 from keras.models import load_model
-from pathlib import Path
 
-FILE_PATH = str(Path(__file__).parent.resolve())
 
 class BaseLandmarksDetector():
     def __init__(self):
         raise NotImplementedError()
-        
+
     def detect_landmarks(self):
         raise NotImplementedError()
 
 class FANLandmarksDetector(BaseLandmarksDetector):
-    def __init__(self, path_to_weights_file=FILE_PATH+"/FAN/2DFAN-4_keras.h5"):
+    def __init__(self,
+        path_to_weights_file=pkg_resources.resource_filename('face_toolbox', 'models/detector/FAN/2DFAN-4_keras.h5')):
         if not tf.__version__ >= '1.13':
             self.net = load_model(path_to_weights_file)
         else:
@@ -31,7 +31,7 @@ class FANLandmarksDetector(BaseLandmarksDetector):
         pred = self.net.predict(prep_img[np.newaxis, ...])
         pnts, pnts_orig = self._get_preds_fromhm(pred[-1], center, scale)
         return pnts, pnts_orig
-    
+
     def _preprocessing_FAN(self, img, detect=False, face_detector=None, bbox=None):
         """
         Preprocess single RGB input image to proper format as following:
@@ -55,12 +55,12 @@ class FANLandmarksDetector(BaseLandmarksDetector):
             bbox = face_detector.detect_face(img)[0]
             x0, x1, y0, y1 = int(bbox[1]), int(bbox[3]), int(bbox[0]), int(bbox[2])
         else:
-            x0, x1, y0, y1 = int(bbox[1]), int(bbox[3]), int(bbox[0]), int(bbox[2])    
+            x0, x1, y0, y1 = int(bbox[1]), int(bbox[3]), int(bbox[0]), int(bbox[2])
 
         # Compute center and scale
         center = np.array([(y0 + y1) / 2, (x0 + x1) / 2], np.float32)
         center[1] = center[1] - (x1 - x0) * 0.12
-        # The number 195 is hard coded in 
+        # The number 195 is hard coded in
         # https://github.com/1adrianb/face-alignment/blob/master/face_alignment/detection/sfd/sfd_detector.py
         scale = (x1 - x0 + y1 - y0) / 195
 
@@ -71,10 +71,10 @@ class FANLandmarksDetector(BaseLandmarksDetector):
         img = img.transpose(2,0,1)
 
         # Normalization
-        img = img / 255   
+        img = img / 255
 
         return img, center, scale
-    
+
     def _crop(self, image, center, scale, resolution=256.0):
         """Center crops an image or set of heatmaps
         Arguments:
@@ -141,7 +141,7 @@ class FANLandmarksDetector(BaseLandmarksDetector):
         new_point = (np.matmul(t, _pt))[0:2].astype(np.int32)
 
         return new_point
-    
+
     def _get_preds_fromhm(self, hm, center=None, scale=None):
         """Obtain (x,y) coordinates given a set of N heatmaps. If the center
         and the scale is provided the function will return the points also in
@@ -181,10 +181,10 @@ class FANLandmarksDetector(BaseLandmarksDetector):
 
         preds_orig = [np.array(p) for p in preds_orig[0]]
         return preds, preds_orig
-    
+
     @staticmethod
-    def draw_landmarks(image, landmarks, color):        
-        for i in range(len(landmarks)): 
+    def draw_landmarks(image, landmarks, color):
+        for i in range(len(landmarks)):
             x, y = landmarks[i]
-            image = cv2.circle(image.copy(), (int(x), int(y)), 3, color, -1)        
+            image = cv2.circle(image.copy(), (int(x), int(y)), 3, color, -1)
         return image

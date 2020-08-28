@@ -32,6 +32,7 @@ from six import string_types, iteritems
 
 import numpy as np
 import tensorflow as tf
+tf.compat.v1.disable_eager_execution()
 #from math import floor
 import cv2
 import os
@@ -193,7 +194,8 @@ class Network(object):
                     dim *= int(d)
                 feed_in = tf.reshape(inp, [-1, dim])
             else:
-                feed_in, dim = (inp, input_shape[-1].value)
+                # feed_in, dim = (inp, input_shape[-1].value)
+                feed_in, dim = (inp, input_shape[-1])
             weights = self.make_var('weights', shape=[dim, num_out])
             biases = self.make_var('biases', [num_out])
             op = tf.compat.v1.nn.relu_layer if relu else tf.compat.v1.nn.xw_plus_b
@@ -710,7 +712,7 @@ def nms(boxes, threshold, method):
         w = np.maximum(0.0, xx2-xx1+1)
         h = np.maximum(0.0, yy2-yy1+1)
         inter = w * h
-        if method is 'Min':
+        if method == 'Min':
             o = inter / np.minimum(area[i], area[idx])
         else:
             o = inter / (area[i] + area[idx] - inter)

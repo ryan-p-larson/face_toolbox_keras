@@ -2,10 +2,8 @@ import pkg_resources
 import cv2
 import numpy as np
 from pathlib import Path
-
 from .BiSeNet.bisenet import BiSeNet_keras
 
-# FILE_PATH = str(Path(__file__).parent.resolve())
 FILE_PATH = pkg_resources.resource_filename('face_toolbox', 'models/parser/BiSeNet/BiSeNet_keras.h5')
 
 class FaceParser():

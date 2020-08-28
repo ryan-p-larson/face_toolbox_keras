@@ -11,7 +11,7 @@ setuptools.setup(
   install_requires=['numpy>=1.16.0', 'opencv-python', 'keras', 'tensorflow'],
   include_package_data=True,
   package_data={
-    '': ['models/parser/BiSeNet/BiSeNet_keras.h5', '**/*.h5']
+    '': ['models/parser/BiSeNet/BiSeNet_keras.h5', '*.h5', '*.npy']
   },
   python_requires='>=3.6'
 )
