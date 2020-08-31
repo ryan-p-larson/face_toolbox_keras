@@ -26,6 +26,23 @@ def scale_down(image: np.ndarray, max_size: int = 768) -> np.ndarray:
       return cv2.resize(image, (0, 0), fx=ratio, fy=ratio)
   return image
 
+def add_padding_as_needed(image: np.ndarray, size: int, color: tuple) -> np.ndarray:
+  height, width, channels = image.shape
+  largest_dim   = max(height, width)
+
+  resized_image = scale_down(image, size) if (largest_dim > size) else scale_up(image, size)
+  resized_height, resized_width = resized_image.shape[:2]
+
+  smallest_dim = min(resized_height, resized_width)
+  left_right = resized_height > resized_width
+  dimension_delta = size - smallest_dim
+
+  if (left_right):
+    return cv2.copyMakeBorder(resized_image, 0, 0, dimension_delta // 2, dimension_delta // 2, cv2.BORDER_CONSTANT, value=color)
+  else:
+    return cv2.copyMakeBorder(resized_image, dimension_delta // 2, dimension_delta // 2, 0, 0, cv2.BORDER_CONSTANT, value=color)
+
+
 def colorize(image: np.ndarray, code):
   if (_HAS_CUDA):
     _GPU_MAT.upload(image)
