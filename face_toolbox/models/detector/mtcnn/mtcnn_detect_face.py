@@ -121,7 +121,7 @@ class Network(object):
         This is used for auto-generating layer names based on the type-prefix.
         """
         ident = sum(t.startswith(prefix) for t, _ in self.layers.items()) + 1
-        return '%s_%d' % (prefix, ident)
+        return f"{prefix}_{ident}"
 
     def make_var(self, name, shape):
         """Creates a new TensorFlow variable."""

@@ -7,9 +7,10 @@ NET_INPUT_SHAPE = (108, 180)
 
 class IrisDetector():
     def __init__(self,
-        path_elg_weights=pkg_resources.resource_filename('face_toolbox', 'models/detector/ELG/elg_keras.h5')):
+        path_elg_weights=pkg_resources.resource_filename('face_toolbox', 'models/detector/ELG/elg_keras.h5'),
+        detector = None):
         self.elg = None
-        self.detector = None
+        self.detector = detector
         self.path_elg_weights = path_elg_weights
 
         self.build_ELG()
@@ -28,8 +29,8 @@ class IrisDetector():
         Outputs:
             output_eye_landmarks: list of eye landmarks having shape (2, 18, 2) with ordering (L/R, landmarks, x/y).
         """
-
-        if landmarks == None:
+        needs_landmarks = type(landmarks) != np.ndarray
+        if (needs_landmarks):
             try:
                 faces, landmarks = self.detector.detect_face(im, with_landmarks=True)
             except:
