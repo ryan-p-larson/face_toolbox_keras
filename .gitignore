@@ -1,5 +1,6 @@
 build/
 dist/
+.vscode/
 *.egg-info/
 *.pyc
 demo-Copy1.ipynb
