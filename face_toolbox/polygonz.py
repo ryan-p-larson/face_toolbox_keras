@@ -1,6 +1,7 @@
 import cv2
 import dlib
 import numpy as np
+from scipy.spatial import Delaunay
 from shapely.geometry import Polygon
 from skimage.draw import polygon as draw_polygon, polygon2mask
 from face_toolbox.segmenter import Segmenter
@@ -9,7 +10,7 @@ from face_toolbox.segmenter import Segmenter
 class Polygonz:
   def __init__(self, landmarks_path: str):
     self.detector     = dlib.get_frontal_face_detector()
-    self.predictor    = dlib.get_frontal_face_detector(landmarks_path)
+    self.predictor    = dlib.shape_predictor(landmarks_path)
     self.cuda_enabled = cv2.cuda.getCudaEnabledDeviceCount() > 0
     self.mat          = cv2.cuda_GpuMat()# if (self.cuda_enabled) else None
 
@@ -54,7 +55,11 @@ class Polygonz:
     points = np.vstack([points,
         [[shape.part(i).y, shape.part(i).x] for i in range(shape.num_parts)]])
 
-    # Filter triangles outside of mask
+
+    # Create Del. triangulation and filter tris falling outside of mask
+    delaunay = Delaunay(points, incremental=True)
+    delaunay.close()
+    triangles = delaunay.points[delaunay.simplices]
     filter_triangles = np.array([tri for tri in triangles
         if (mask[int(Polygon(tri).centroid.x), int(Polygon(tri).centroid.y)] > 0)])
 

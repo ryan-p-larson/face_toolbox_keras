@@ -17,7 +17,7 @@ class Segmenter:
     exclude: List[int] = [0]):
     include, exclude = set(include), set(exclude)
     height, width, _ = image.shape
-    mask_out = np.zeros((height, width, 3), dtype=np.uint8)
+    mask_out = np.zeros((height, width, 1), dtype=np.uint8)
 
     for r in range(height):
       for c in range(width):
@@ -25,7 +25,7 @@ class Segmenter:
         excluded = segments[r][c] in exclude
         mask_out[r][c] = 1 if (included and not excluded) else 0
 
-    masked_image = cv2.bitwise_and(image, image, mask=cv2.UMat(mask))
+    masked_image = cv2.bitwise_and(image, image, mask=cv2.UMat(mask_out))
     return cv2.UMat.get(masked_image), mask_out
 
   def segment(self, image: np.ndarray) -> (np.ndarray, np.ndarray):
