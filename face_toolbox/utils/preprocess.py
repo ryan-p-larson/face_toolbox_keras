@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from matplotlib import colors, cm
 
 _HAS_CUDA = cv2.cuda.getCudaEnabledDeviceCount() > 0
 _GPU_MAT = cv2.cuda_GpuMat() if (_HAS_CUDA) else None
@@ -51,6 +52,14 @@ def colorize(image: np.ndarray, code):
   else:
     return cv2.cvtColor(image, code)
 
+def warpAffine(image: np.ndarray, m: np.ndarray, size: (int, int)) -> np.ndarray:
+  if (_HAS_CUDA):
+    _GPU_MAT.upload(image)
+    gpu_out = cv2.cuda.warpAffine(image, m, size))
+    return gpu_out.download()
+  else:
+    return cv2.warpAffine(image, m, size))
+
 def threshold_clahe(gray: np.ndarray, ycrcb: np.ndarray) -> (np.ndarray, float, float):
   if (_HAS_CUDA):
     gray_gpu = cv2.cuda_GpuMat()
@@ -76,3 +85,40 @@ def threshold_clahe(gray: np.ndarray, ycrcb: np.ndarray) -> (np.ndarray, float, 
     blurred_gray_image     = cv2.GaussianBlur(gray_image, (0, 0), 3)
     sharp_gray_image       = cv2.addWeighted(gray_image, 2.5, blurred_gray_image, -1, 0)
     return sharp_gray_image, low_thresh, high_thresh
+
+def draw_segment_map(segments: np.ndarray):
+  _SEGMENT_CMAP = [
+    [ 0, '#ffffff'], # background
+    [ 1, '#a1d99b'], # skin
+    [ 2, '#41ab5d'], # eyebrow
+    [ 3, '#41ab5d'], # eyebrow
+    [ 4, '#238b45'], # eye
+    [ 5, '#238b45'], # eye
+    [ 6, '#6edf00'], # glasses
+    [ 7, '#00fb75'], # ear
+    [ 8, '#00fb75'], # ear
+    [ 9, '#6edf00'], # earings
+    [10, '#c7e9c0'], # nose
+    [11, '#ffffcc'], # mouth
+    [12, '#ffffcc'], # mouth
+    [13, '#ffffcc'], # mouth
+    [14, '#005718'], # neck
+    [15, '#005718'], # neck_lower
+    [16, '#decbe4'], # cloth
+    [17, '#e5d8bd'], # hair
+    [18, '#ffea00']  # hat
+  ]
+  for i in range(19, 256):
+    _SEGMENT_CMAP.append([i, '#ffffff'])
+
+  cmap_classes = colors.ListedColormap([seg[1] for seg in _SEGMENT_CMAP])
+  rgba_data    = cm.ScalarMappable(cmap=cmap_classes).to_rgba(
+      np.arange(0, 1.0, 1.0 / 256.0), bytes=True
+  )
+  rgba_data = rgba_data[:, 0:-1].reshape((256, 1, 3))
+
+  # Convert to BGR (or RGB), uint8, for OpenCV.
+  lut_classes = np.zeros((256, 1, 3), np.uint8)
+  lut_classes[:, :, :] = rgba_data[:, :, ::-1]
+
+  return cv2.applyColorMap(segments, lut_classes)
