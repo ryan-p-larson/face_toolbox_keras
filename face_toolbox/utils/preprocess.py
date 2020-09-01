@@ -55,7 +55,7 @@ def colorize(image: np.ndarray, code):
 def warpAffine(image: np.ndarray, m: np.ndarray, size: (int, int)) -> np.ndarray:
   if (_HAS_CUDA):
     _GPU_MAT.upload(image)
-    gpu_out = cv2.cuda.warpAffine(image, m, size))
+    gpu_out = cv2.cuda.warpAffine(image, m, size)
     return gpu_out.download()
   else:
     return cv2.warpAffine(image, m, size))
@@ -122,3 +122,24 @@ def draw_segment_map(segments: np.ndarray):
   lut_classes[:, :, :] = rgba_data[:, :, ::-1]
 
   return cv2.applyColorMap(segments, lut_classes)
+
+def segment_mask(
+  image: np.ndarray,
+  segments: np.ndarray,
+  include: set = set([]),
+  exclude: set = set([0, 16])
+) -> np.ndarray:
+  height, width = image.shape[:2]
+  mask_output   = np.zeros((height, width, 1), dtype=np.uint8)
+
+  for r in range(height):
+    for c in range(width):
+      included = ((len(include) == 0) or (segments[r][c] in include))
+      excluded = segments[r][c] in exclude
+      mask_output[r][c] = 1 if (included and not excluded) else 0
+
+  # if (_HAS_CUDA):
+  #   _GPU_MAT.upload(image)
+  #   # gpu_out = cv2.cuda.bitwise_and(gpu_out, gpu_out, )
+  masked_image = cv2.bitwise_and(image, image, mask=cv2.UMat(mask_output))
+  return cv2.UMat.get(masked_image), mask_output
