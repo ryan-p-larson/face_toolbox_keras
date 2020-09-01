@@ -2,7 +2,7 @@
 
 A collection of deep learning frameworks ported to Keras for face detection, face segmentation, face parsing, iris detection.
 
-![](./images/examples.jpg)
+![](./assets/examples.jpg)
 
 ## Descriptions
 
