@@ -58,7 +58,7 @@ def warpAffine(image: np.ndarray, m: np.ndarray, size: (int, int)) -> np.ndarray
     gpu_out = cv2.cuda.warpAffine(image, m, size)
     return gpu_out.download()
   else:
-    return cv2.warpAffine(image, m, size))
+    return cv2.warpAffine(image, m, size)
 
 def threshold_clahe(gray: np.ndarray, ycrcb: np.ndarray) -> (np.ndarray, float, float):
   if (_HAS_CUDA):
