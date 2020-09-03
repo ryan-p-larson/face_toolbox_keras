@@ -1,6 +1,6 @@
 import cv2
 import numpy as np
-from skimage.draw import polygon as _polygon
+from skimage.draw import polygon as _polygon, polygon_perimeter
 from matplotlib import pyplot as plt
 from matplotlib import colors, cm
 
@@ -53,11 +53,13 @@ def draw_triangles_fill_avg(image: np.ndarray, triangles: np.ndarray, color: (in
         cv2.fillConvexPoly(output, tri[:, ::-1].astype(np.int32), avg_color)
     return output
 
-def draw_triangles_outline(image: np.ndarray, triangles: np.ndarray, width: float, color: (int, int, int)):
+def draw_triangles_outline(image: np.ndarray, triangles: np.ndarray, color: (int, int, int)):
     height, width, channels = image.shape
-    background = np.full((height, width, channels), color, np.int32)
-    outlines   = cv2.polylines(background, triangles.astype(np.int32), True, (0, 0, 0), width, cv2.LINE_AA)
-    return outlines
+    output = np.full((height, width, channels), color, np.uint8)
+    for tri in triangles:
+        rr, cc         = polygon_perimeter(tri[:, 0], tri[:, 1], (height, width))
+        output[rr, cc] = [255, 255, 255]
+    return output
 
 def draw_segment_map(segments: np.ndarray):
   _SEGMENT_CMAP = [
