@@ -43,7 +43,6 @@ def add_padding_as_needed(image: np.ndarray, size: int, color: tuple) -> np.ndar
   else:
     return cv2.copyMakeBorder(resized_image, dimension_delta // 2, dimension_delta // 2, 0, 0, cv2.BORDER_CONSTANT, value=color)
 
-
 def colorize(image: np.ndarray, code):
   if (_HAS_CUDA):
     _GPU_MAT.upload(image)
@@ -86,35 +85,27 @@ def threshold_clahe(gray: np.ndarray, ycrcb: np.ndarray) -> (np.ndarray, float, 
     sharp_gray_image       = cv2.addWeighted(gray_image, 2.5, blurred_gray_image, -1, 0)
     return sharp_gray_image, low_thresh, high_thresh
 
-def apply_mask(
-  image: np.ndarray,
-  segments: np.ndarray,
-  include: set = set(),
-  exclude: set = set([0]),
-  background: tuple = None
-):
-  height, width = image.shape[:2]
-  fill_value    = background if (background != None) else 0
-  mask          = np.full((height, width), 0, dtype=np.uint8)
-  output        = np.full((height, width, 3), fill_value, np.uint8)
+def segment_subset(mask: np.ndarray, include: set = set(), exclude: set = set([0, 16])):
+    height, width = mask.shape[:2]
+    output = np.zeros((height, width), np.uint8)
+    for r in range(height):
+        for c in range(width):
+            included = ((len(include) == 0) or (mask[r][c] in include))
+            excluded = mask[r][c] in exclude
+            output[r][c] = 1 if (included and not excluded) else 0
+    return output
 
-  for r in range(height):
-      for c in range(width):
-          included = ((len(include) == 0) or (segments[r][c] in include))
-          excluded = segments[r][c] in exclude
-          mask[r][c] = 1 if (included and not excluded) else 0
+def apply_mask(image: np.ndarray, mask: np.ndarray, color: tuple = (255, 255, 255)):
+    height, width = image.shape[:2]
+    background    = np.full((height, width, 3), color, np.uint8)
 
-  # smooth the mask
-  mask_softer = cv2.GaussianBlur(mask, (7,7), 0)
+    # smooth the mask
+    smoothed_mask    = cv2.GaussianBlur(mask, (7, 7), 0)
+    image_foreground = cv2.bitwise_and(image, image, mask=smoothed_mask)
+    image_background = cv2.bitwise_not(background, background, mask=smoothed_mask)
+    combined_image   = cv2.add(image_background, image_foreground)
 
-  image_mask_fg = cv2.bitwise_and(image, image, mask=cv2.UMat(mask_softer))
-  image_mask_fg = cv2.UMat.get(image_mask_fg)
-  image_mask_bg = cv2.bitwise_not(output, output, mask=mask_softer)
-
-  image_mask_combined = cv2.add(image_mask_bg, image_mask_fg)
-
-  return image_mask_combined, mask_softer
-
+    return combined_image
 
 def segment_mask(
   image: np.ndarray,
