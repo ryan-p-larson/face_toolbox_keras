@@ -55,12 +55,9 @@ def draw_triangles_fill_avg(image: np.ndarray, triangles: np.ndarray, color: (in
 
 def draw_triangles_outline(image: np.ndarray, triangles: np.ndarray, width: float, color: (int, int, int)):
     height, width, channels = image.shape
-    output = np.full((height, width, channels), color, np.int32)
-    for tri in triangles:
-        cv2.line(output, tri[0], tri[1], (0, 0, 0), thickness=width)
-        cv2.line(output, tri[1], tri[2], (0, 0, 0), thickness=width)
-        cv2.line(output, tri[2], tri[0], (0, 0, 0), thickness=width)
-    return output
+    background = np.full((height, width, channels), color, np.int32)
+    outlines   = cv2.polylines(background, triangles.astype(np.int32), True, (0, 0, 0), width, cv2.LINE_AA)
+    return outlines
 
 def draw_segment_map(segments: np.ndarray):
   _SEGMENT_CMAP = [
