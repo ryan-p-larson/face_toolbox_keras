@@ -1,9 +1,9 @@
 import cv2
 import numpy as np
-from matplotlib import colors, cm
 
 _HAS_CUDA = cv2.cuda.getCudaEnabledDeviceCount() > 0
 _GPU_MAT = cv2.cuda_GpuMat() if (_HAS_CUDA) else None
+
 
 def scale_up(image: np.ndarray, min_size: int = 1200) -> np.ndarray:
   if np.max(image.shape) < min_size:
@@ -86,42 +86,35 @@ def threshold_clahe(gray: np.ndarray, ycrcb: np.ndarray) -> (np.ndarray, float, 
     sharp_gray_image       = cv2.addWeighted(gray_image, 2.5, blurred_gray_image, -1, 0)
     return sharp_gray_image, low_thresh, high_thresh
 
-def draw_segment_map(segments: np.ndarray):
-  _SEGMENT_CMAP = [
-    [ 0, '#ffffff'], # background
-    [ 1, '#a1d99b'], # skin
-    [ 2, '#41ab5d'], # eyebrow
-    [ 3, '#41ab5d'], # eyebrow
-    [ 4, '#238b45'], # eye
-    [ 5, '#238b45'], # eye
-    [ 6, '#6edf00'], # glasses
-    [ 7, '#00fb75'], # ear
-    [ 8, '#00fb75'], # ear
-    [ 9, '#6edf00'], # earings
-    [10, '#c7e9c0'], # nose
-    [11, '#ffffcc'], # mouth
-    [12, '#ffffcc'], # mouth
-    [13, '#ffffcc'], # mouth
-    [14, '#005718'], # neck
-    [15, '#005718'], # neck_lower
-    [16, '#decbe4'], # cloth
-    [17, '#e5d8bd'], # hair
-    [18, '#ffea00']  # hat
-  ]
-  for i in range(19, 256):
-    _SEGMENT_CMAP.append([i, '#ffffff'])
+def apply_mask(
+  image: np.ndarray,
+  segments: np.ndarray,
+  include: set = set(),
+  exclude: set = set([0]),
+  background: tuple = None
+):
+  height, width = image.shape[:2]
+  fill_value    = background if (background != None) else 0
+  mask          = np.full((height, width), 0, dtype=np.uint8)
+  output        = np.full((height, width, 3), fill_value, np.uint8)
 
-  cmap_classes = colors.ListedColormap([seg[1] for seg in _SEGMENT_CMAP])
-  rgba_data    = cm.ScalarMappable(cmap=cmap_classes).to_rgba(
-      np.arange(0, 1.0, 1.0 / 256.0), bytes=True
-  )
-  rgba_data = rgba_data[:, 0:-1].reshape((256, 1, 3))
+  for r in range(height):
+      for c in range(width):
+          included = ((len(include) == 0) or (segments[r][c] in include))
+          excluded = segments[r][c] in exclude
+          mask[r][c] = 1 if (included and not excluded) else 0
 
-  # Convert to BGR (or RGB), uint8, for OpenCV.
-  lut_classes = np.zeros((256, 1, 3), np.uint8)
-  lut_classes[:, :, :] = rgba_data[:, :, ::-1]
+  # smooth the mask
+  mask_softer = cv2.GaussianBlur(mask, (7,7), 0)
 
-  return cv2.applyColorMap(segments, lut_classes)
+  image_mask_fg = cv2.bitwise_and(image, image, mask=cv2.UMat(mask_softer))
+  image_mask_fg = cv2.UMat.get(image_mask_fg)
+  image_mask_bg = cv2.bitwise_not(output, output, mask=mask_softer)
+
+  image_mask_combined = cv2.add(image_mask_bg, image_mask_fg)
+
+  return image_mask_combined, mask_softer
+
 
 def segment_mask(
   image: np.ndarray,
@@ -132,12 +125,14 @@ def segment_mask(
   height, width = image.shape[:2]
   mask_output   = np.zeros((height, width, 1), dtype=np.uint8)
 
+  # Create mask from selected segments
   for r in range(height):
     for c in range(width):
       included = ((len(include) == 0) or (segments[r][c] in include))
       excluded = segments[r][c] in exclude
       mask_output[r][c] = 1 if (included and not excluded) else 0
 
+  # Get the foreground by using the fresh mask
   # if (_HAS_CUDA):
   #   _GPU_MAT.upload(image)
   #   # gpu_out = cv2.cuda.bitwise_and(gpu_out, gpu_out, )
