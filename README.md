@@ -105,3 +105,16 @@ It works fine on Colab at this point (2019/06/11) but for certain Keras/TensorFl
 
 ## Acknowledgments
 We learnt a lot from [1adrianb/face-alignment](https://github.com/1adrianb/face-alignment), [zllrunning/face-parsing.PyTorch](https://github.com/zllrunning/face-parsing.PyTorch), [swook/GazeML](https://github.com/swook/GazeML), [deepinsight/insightface](https://github.com/deepinsight/insightface), [davidsandberg/facenet](https://github.com/davidsandberg/facenet), and [ZhaoJ9014/face.evoLVe.PyTorch](https://github.com/ZhaoJ9014/face.evoLVe.PyTorch).
+
+
+---
+
+**https://musicinformationretrieval.com/**
+
+https://github.com/dodiku/AudioOwl
+
+https://github.com/gabolsgabs/DALI
+
+https://github.com/CPJKU/madmom
+
+https://github.com/georgid/AlignmentDuration
