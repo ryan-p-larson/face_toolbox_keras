@@ -28,7 +28,7 @@ def rgb_to_bgr(rgb):
   return (rgb[2], rgb[1], rgb[0])
 
 def lighter(bgr: tuple, percent: float):
-  '''assumes color is bgr between (0, 0, 0) and (255, 255, 255)'''
+  """assumes color is bgr between (0, 0, 0) and (255, 255, 255)"""
   rgb    = np.array(bgr_to_rgb(bgr))
   white  = np.array([255, 255, 255])
   vector = white - rgb

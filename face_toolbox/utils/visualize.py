@@ -1,8 +1,8 @@
 import cv2
 import numpy as np
 from skimage.draw import polygon as _polygon, polygon_perimeter
-from matplotlib import pyplot as plt
-from matplotlib import colors, cm
+from matplotlib import pyplot as plt, colors, cm
+from units import lighter
 
 
 _parsing_annos = [
@@ -12,9 +12,9 @@ _parsing_annos = [
     '14, neck', '15, neck_l', '16, cloth', '17, hair', '18, hat'
 ]
 
-# https://matplotlib.org/tutorials/colors/colormap-manipulation.html
-# https://stackoverflow.com/questions/14777066/matplotlib-discrete-colorbar
 def show_parsing_with_annos(data):
+    # https://matplotlib.org/tutorials/colors/colormap-manipulation.html
+    # https://stackoverflow.com/questions/14777066/matplotlib-discrete-colorbar
     fig, ax = plt.subplots(figsize=(8,8))
 
     #get discrete colormap
@@ -52,6 +52,45 @@ def draw_triangles_fill_avg(image: np.ndarray, triangles: np.ndarray, color: (in
         avg_color = np.mean(image[rr, cc], axis=0)
         cv2.fillConvexPoly(output, tri[:, ::-1].astype(np.int32), avg_color)
     return output
+
+def draw_triangles_filled(
+    image   : np.ndarray,
+    tris    : np.ndarray,
+    bg      : np.ndarray = None,
+    bg_color: tuple      = None,
+    amount  : float      = 1.0
+):
+    if (type(bg) != np.ndarray and bg_color == None): raise AssertionError('Background and color can not both be none')
+    height, width = image.shape[:2]
+    output = bg.astype(np.int32) if (bg_color == None) else np.full((height, width, 3), bg_color, np.int32)
+
+    for tri in tris:
+        rr, cc = _polygon(tri[:, 0], tri[:, 1], (height, width))
+        average_color = np.mean(image[rr, cc], axis=0)
+        lighter_color = lighten(tuple(average_color.tolist())) if (amount != 1.0) else average_color
+        cv2.fillConvexPoly(output, tri[:, ::-1].astype(np.int32), lighter_color)
+
+    return output
+
+def draw_triangles_lines(
+    image   : np.ndarray,
+    tris    : np.ndarray,
+    fg_color: tuple      = (0, 0, 0),
+    bg_color: tuple      = None,
+    bg      : np.ndarray = None,
+    amount  : float      = 1.0
+):
+    if (type(bg) != np.ndarray and bg_color == None): raise AssertionError('Background and color can not both be none')
+    height, width = image.shape[:2]
+    output = bg if (bg_color == None) else np.full((height, width, 3), bg_color, np.int32)
+
+    for tri in tris:
+        rr, cc         = polygon_perimeter(tri[:, 0], tri[:, 1], (height, width))
+        lighter_color  = lighten(tuple(average_color.tolist())) if (amount != 1.0) else fg_color
+        output[rr, cc] = lighter_color
+
+    return output
+
 
 def draw_triangles_outline(image: np.ndarray, triangles: np.ndarray, color: (int, int, int)):
     height, width, channels = image.shape
