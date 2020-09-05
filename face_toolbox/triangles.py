@@ -4,7 +4,7 @@ from shapely.geometry import Polygon
 
 def filter_triangle_points(points: np.ndarray, mask: np.ndarray):
   """Returns a Numpy array whose points fall within the boundaries of the valid mask area."""
-  valid_points = [pt for pt in points if (mask[tuple(pt)] and mask[tuple(pt) > 0])]
+  valid_points = [pt for pt in points if (mask[tuple(pt)] and mask[tuple(pt)] > 0)]
   return np.array(valid_points)
 
 def randomize_triangle_points(points: np.ndarray, c: float) -> (np.ndarray, np.ndarray):
