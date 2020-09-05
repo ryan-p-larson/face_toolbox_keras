@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from skimage.draw import polygon as _polygon, polygon_perimeter
 from matplotlib import pyplot as plt, colors, cm
-from units import lighter
+from .units import lighter
 
 
 _parsing_annos = [
@@ -67,7 +67,16 @@ def draw_triangles_filled(
     for tri in tris:
         rr, cc = _polygon(tri[:, 0], tri[:, 1], (height, width))
         average_color = np.mean(image[rr, cc], axis=0)
-        lighter_color = lighten(tuple(average_color.tolist())) if (amount != 1.0) else average_color
+        average_color = tuple(average_color.astype(np.uint8).tolist())
+        # lighter(tuple(average_color.tolist()), ...)
+        try:
+          lighter_color = lighter(average_color, amount) if (amount != 1.0) else average_color
+        except Exception as e:
+          print(average_color, average_color[0])
+          print(amount)
+          print(len(rr), len(cc))
+          raise Exception(e)
+
         cv2.fillConvexPoly(output, tri[:, ::-1].astype(np.int32), lighter_color)
 
     return output
@@ -86,7 +95,7 @@ def draw_triangles_lines(
 
     for tri in tris:
         rr, cc         = polygon_perimeter(tri[:, 0], tri[:, 1], (height, width))
-        lighter_color  = lighten(tuple(average_color.tolist())) if (amount != 1.0) else fg_color
+        lighter_color  = lighter(fg_color, amount) if (amount != 1.0) else fg_color
         output[rr, cc] = lighter_color
 
     return output
