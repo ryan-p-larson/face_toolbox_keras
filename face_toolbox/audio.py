@@ -17,7 +17,7 @@ def get_track_beats(path: str, hop_length: int = 512) -> np.ndarray:
   # Tempo and beats
   tempo, beat_times = librosa.beat.beat_track(
       y, sr=sr, onset_envelope=onset_env, trim=False,
-      start_bpm=127, hop_length=hop_length, units='time')
+      hop_length=hop_length, units='time')
 
   return beat_times
 
