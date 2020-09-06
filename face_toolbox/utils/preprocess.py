@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+from skimage.morphology import remove_small_holes
 
 _HAS_CUDA = cv2.cuda.getCudaEnabledDeviceCount() > 0
 _GPU_MAT = cv2.cuda_GpuMat() if (_HAS_CUDA) else None
@@ -93,7 +94,10 @@ def segment_subset(mask: np.ndarray, include: set = set(), exclude: set = set([0
       included = ((len(include) == 0) or (mask[r][c] in include))
       excluded = mask[r][c] in exclude
       output[r][c] = 1 if (included and not excluded) else 0
-  return output
+
+  inpaint_mask   = remove_small_holes(output)
+  inpaint_output = cv2.inpaint(output, ~inpaint_mask.astype(np.uint8), 3, cv2.INPAINT_TELEA)
+  return inpaint_output
 
 def apply_mask(image: np.ndarray, mask: np.ndarray, color: tuple = (255, 255, 255)):
     height, width = image.shape[:2]
