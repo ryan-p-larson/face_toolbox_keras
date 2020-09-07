@@ -122,9 +122,9 @@ def draw_segment_map(segments: np.ndarray):
     [ 8, '#00fb75'], # ear
     [ 9, '#6edf00'], # earings
     [10, '#c7e9c0'], # nose
-    [11, '#ffffcc'], # mouth
-    [12, '#ffffcc'], # mouth
-    [13, '#ffffcc'], # mouth
+    [11, '#F0AA99'], # mouth
+    [12, '#F0AA99'], # mouth
+    [13, '#F0AA99'], # mouth
     [14, '#005718'], # neck
     [15, '#005718'], # neck_lower
     [16, '#decbe4'], # cloth
