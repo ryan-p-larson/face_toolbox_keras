@@ -30,3 +30,9 @@ def sort_triangles(tris: np.ndarray):
   key_by_dist = lambda p: compute_tri_pt_dist(p)
   sorted_tris = sorted([tri for tri in tris.copy()], key=key_by_dist)
   return sorted_tris
+
+def split_triangles(tris: np.ndarray, amount: float):
+  idx_split   = max(min(int(amount * len(tris)), len(tris)), 0)
+  tris_before = tris[:idx_split]
+  tris_after  = tris[idx_split:]
+  return tris_before, tris_after
