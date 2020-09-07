@@ -73,12 +73,13 @@ def frame_canny_split(image: np.ndarray, selected_pts: np.array, removed_pts: np
   output                     = visualize.draw_landmarks(output, select_close, r=2, color=select_color)
   return output.astype(np.uint8)
 
-def draw_outline_split(image: np.ndarray, tris: np.ndarray, amount: float, fg_color: tuple, bg_color: tuple):
+def frame_outline_split(image: np.ndarray, tris: np.ndarray, amount: float,
+  pt_color: tuple, tri_color: tuple, bg_color: tuple):
   height, width   = image.shape[:2]
   closer, further = triFuncs.split_triangles(tris, amount)
   further_pts     = np.array(further, np.int32).ravel().reshape((-1, 2))[:, ::-1]
-  output          = visualize.draw_triangles_lines(image, closer, fg_color=fg_color, bg_color=bg_color)
-  output          = visualize.draw_landmarks(output, further_pts, 1, COLOR_WHITE)
+  output          = visualize.draw_triangles_lines(image, closer, fg_color=tri_color, bg_color=bg_color)
+  output          = visualize.draw_landmarks(output, further_pts, 1, pt_color)
   return output.astype(np.uint8)
 
 def frame_fill_split(image: np.ndarray, tris: np.ndarray, amount: float, fg_color: tuple, bg_color: tuple):
