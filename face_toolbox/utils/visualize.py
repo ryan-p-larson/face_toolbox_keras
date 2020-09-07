@@ -110,7 +110,7 @@ def draw_triangles_outline(image: np.ndarray, triangles: np.ndarray, color: (int
     return output
 
 def draw_segment_map(segments: np.ndarray):
- 	_SEGMENT_CMAP  = [
+  _SEGMENT_CMAP  = [
     [ 0, '#ffffff'], # background
     [ 1, '#003f5c'], # skin
     [ 2, '#444e86'], # eyebrow
@@ -130,7 +130,7 @@ def draw_segment_map(segments: np.ndarray):
     [16, '#ff6e54'], # cloth
     [17, '#ff6e54'], # hair
     [18, '#ffa600']  # hat
-	]
+  ]
   for i in range(19, 256):
     _SEGMENT_CMAP.append([i, '#ffffff'])
 
