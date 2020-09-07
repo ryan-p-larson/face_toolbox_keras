@@ -36,3 +36,8 @@ def split_triangles(tris: np.ndarray, amount: float):
   tris_before = tris[:idx_split]
   tris_after  = tris[idx_split:]
   return tris_before, tris_after
+
+def sort_pts(pts: np.array):
+  key_by_dist = lambda pt: np.linalg.norm(pt - np.array([0, 0]))
+  sorted_pts  = sorted([pt for pt in pts.copy()], key=key_by_dist)
+  return np.array(sorted_pts)
