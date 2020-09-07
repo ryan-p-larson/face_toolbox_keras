@@ -11,7 +11,7 @@ setuptools.setup(
   install_requires=['numpy', 'opencv-python', 'keras', 'tensorflow', 'shapely', 'scikit-image'],
   include_package_data=True,
   package_data={
-    '': ['models/parser/BiSeNet/BiSeNet_keras.h5', '*.h5', '*.npy']
+    '': ['models/parser/BiSeNet/BiSeNet_keras.h5', '*.h5', '*.npy', '*.json']
   },
   python_requires='>=3.6'
 )
