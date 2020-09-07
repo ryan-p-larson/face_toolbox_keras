@@ -113,11 +113,11 @@ def draw_segment_map(segments: np.ndarray):
   _SEGMENT_CMAP  = [
     [ 0, '#ffffff'], # background
     [ 1, '#003f5c'], # skin
-    [ 2, '#444e86'], # eyebrow
-    [ 3, '#444e86'], # eyebrow
-    [ 4, '#444e86'], # eye
-    [ 5, '#444e86'], # eye
-    [ 6, '#444e86'], # glasses
+    [ 2, '#dd5182'], # eyebrow
+    [ 3, '#dd5182'], # eyebrow
+    [ 4, '#dd5182'], # eye
+    [ 5, '#dd5182'], # eye
+    [ 6, '#dd5182'], # glasses
     [ 7, '#955196'], # ear
     [ 8, '#955196'], # ear
     [ 9, '#955196'], # earings
@@ -125,8 +125,8 @@ def draw_segment_map(segments: np.ndarray):
     [11, '#F0AA99'], # mouth
     [12, '#F0AA99'], # mouth
     [13, '#F0AA99'], # mouth
-    [14, '#dd5182'], # neck
-    [15, '#dd5182'], # neck_lower
+    [14, '#955196'], # neck
+    [15, '#955196'], # neck_lower
     [16, '#ff6e54'], # cloth
     [17, '#ff6e54'], # hair
     [18, '#ffa600']  # hat
