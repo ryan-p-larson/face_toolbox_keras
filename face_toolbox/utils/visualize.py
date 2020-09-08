@@ -32,9 +32,6 @@ def show_parsing_with_annos(data):
     plt.axis('off')
     fig.show()
 
-def draw_segments(image: np.ndarray, segments: np.ndarray):
-    pass
-
 def draw_bbox(image: np.ndarray, x: int, y: int, w: int, h: int, width: int, color: (int, int, int)):
     return cv2.rectangle(image.copy(), (x, y), (x+w, y+h), color, width, cv2.LINE_AA)
 
