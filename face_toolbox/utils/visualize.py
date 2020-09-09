@@ -97,7 +97,6 @@ def draw_triangles_lines(
 
     return output
 
-
 def draw_triangles_outline(image: np.ndarray, triangles: np.ndarray, color: (int, int, int)):
     height, width, channels = image.shape
     output = np.full((height, width, channels), color, np.uint8)

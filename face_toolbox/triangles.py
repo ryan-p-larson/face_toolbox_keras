@@ -1,5 +1,6 @@
 import numpy as np
 from shapely.geometry import Polygon
+from skimage.draw import polygon as draw_polygon
 
 
 def filter_triangle_points(points: np.ndarray, mask: np.ndarray):
@@ -41,3 +42,13 @@ def sort_pts(pts: np.array):
   key_by_dist = lambda pt: np.linalg.norm(pt - np.array([0, 0]))
   sorted_pts  = sorted([pt for pt in pts.copy()], key=key_by_dist)
   return np.array(sorted_pts)
+
+def tris_to_mask(image: np.ndarray, tris: np.ndarray):
+  height, width = image.shape[:2]
+  output = np.zeros((height, width), np.uint8)
+
+  for tri in tris:
+    rr, cc = draw_polygon(tri[:, 0], tri[:, 1], (height, width))
+    output[rr, cc] = 1
+
+  return output

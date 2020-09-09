@@ -18,7 +18,7 @@ def frame_eyes_landmarks(image: np.ndarray, landmarks: np.array):
     points              = lndmrks[start:end]
     distance            = np.cumsum( np.sqrt(np.sum( np.diff(points, axis=0)**2, axis=1 )))
     distance            = np.insert(distance, 0, 0) / distance[-1]
-    interpolator        =  interp1d(distance, points, kind='cubic', axis=0)
+    interpolator        = interp1d(distance, points, kind='cubic', axis=0)
     interpolated_points = interpolator(np.linspace(0, 1, 20))
     cv2.polylines(img, np.int32([interpolated_points]), isClosed, color, thickness=2)
 
@@ -65,12 +65,12 @@ def frame_eyes_triangle(image: np.ndarray, landmarks: np.array, thickness: int, 
   output = cv2.line(output, tuple(left_eye_center), tuple(right_eye_center), 5, (0, 255, 0))
   output = cv2.line(output, tuple(left_eye_center), tuple(right_eye_center), 5, (0, 255, 0))
 
-def frame_canny_split(image: np.ndarray, selected_pts: np.array, removed_pts: np.array, amount: float, select_color: tuple, remove_color: tuple):
+def frame_canny_split(image: np.ndarray, selected_pts: np.array, removed_pts: np.array, amount: float, select_color: tuple, remove_color: tuple, r: int = 1):
   height, width              = image.shape[:2]
   removed_close, removed_far = triFuncs.split_triangles(removed_pts, amount)
   select_close,  select_far  = triFuncs.split_triangles(selected_pts, amount)
-  output                     = visualize.draw_landmarks(np.zeros((height, width, 3), np.uint8), removed_far, r=1, color=remove_color)
-  output                     = visualize.draw_landmarks(output, select_close, r=2, color=select_color)
+  output                     = visualize.draw_landmarks(np.zeros((height, width, 3), np.uint8), removed_far, r=r, color=remove_color)
+  output                     = visualize.draw_landmarks(output, select_close, r=r, color=select_color)
   return output.astype(np.uint8)
 
 def frame_outline_split(image: np.ndarray, tris: np.ndarray, amount: float,
